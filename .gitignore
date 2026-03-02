@@ -1,0 +1,23 @@
+# Environment & secrets
+.env
+*.local.yaml
+
+# Data & results (server-local only)
+data/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Node
+node_modules/
+.next/
+
+# Model cache (huge)
+*.gguf
+*.safetensors
+
+# OS
+.DS_Store

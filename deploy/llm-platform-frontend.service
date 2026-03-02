@@ -1,0 +1,16 @@
+[Unit]
+Description=LLM Hidden State Platform - Frontend (Next.js)
+After=llm-platform-backend.service
+
+[Service]
+Type=simple
+User=<YOUR_USER>
+WorkingDirectory=/opt/llm-hidden-state-platform/frontend
+Environment=BACKEND_URL=http://127.0.0.1:8000
+Environment=PORT=3000
+ExecStart=/usr/bin/npm start
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

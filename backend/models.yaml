@@ -1,0 +1,28 @@
+models:
+  - id: "qwen3-0.6b"
+    name: "Qwen3-0.6B（開発・テスト用）"
+    hf_repo: "Qwen/Qwen3-0.6B"
+    quantize: false
+    torch_dtype: "float16"
+    description: "軽量モデル。パイプライン検証用。"
+
+  - id: "qwen3-4b"
+    name: "Qwen3-4B"
+    hf_repo: "Qwen/Qwen3-4B"
+    quantize: false
+    torch_dtype: "float16"
+    description: "中規模モデル。"
+
+  - id: "qwen3-30b-a3b"
+    name: "Qwen3-30B-A3B（MoE, 4bit量子化）"
+    hf_repo: "Qwen/Qwen3-30B-A3B"
+    quantize: true
+    torch_dtype: "float16"
+    description: "本番用。Active 3Bパラメータ、MoEアーキテクチャ。"
+
+  - id: "qwen3-8b"
+    name: "Qwen3-8B"
+    hf_repo: "Qwen/Qwen3-8B"
+    quantize: false
+    torch_dtype: "float16"
+    description: "Dense 8Bモデル。MoEとの比較実験用。"

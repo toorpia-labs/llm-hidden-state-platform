@@ -1,0 +1,18 @@
+[Unit]
+Description=LLM Hidden State Platform - Backend (FastAPI)
+After=network.target
+
+[Service]
+Type=simple
+User=<YOUR_USER>
+WorkingDirectory=/opt/llm-hidden-state-platform/backend
+EnvironmentFile=/opt/llm-hidden-state-platform/.env
+ExecStart=/opt/llm-hidden-state-platform/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+Restart=on-failure
+RestartSec=10
+
+# GPU access
+Environment=CUDA_VISIBLE_DEVICES=0
+
+[Install]
+WantedBy=multi-user.target
