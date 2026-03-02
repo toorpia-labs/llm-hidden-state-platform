@@ -2,6 +2,9 @@
 .env
 *.local.yaml
 
+# Claude Code instructions (local only)
+CLAUDE.md
+
 # Data & results (server-local only)
 data/
 
