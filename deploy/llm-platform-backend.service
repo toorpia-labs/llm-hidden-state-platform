@@ -7,7 +7,7 @@ Type=simple
 User=<YOUR_USER>
 WorkingDirectory=/opt/llm-hidden-state-platform/backend
 EnvironmentFile=/opt/llm-hidden-state-platform/.env
-ExecStart=/opt/llm-hidden-state-platform/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8000
+ExecStart=/opt/llm-hidden-state-platform/backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001
 Restart=on-failure
 RestartSec=10
 

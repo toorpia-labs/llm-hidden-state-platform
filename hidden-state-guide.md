@@ -89,14 +89,14 @@
 
 Web UI (`http://<サーバーIP>:3000`) にアクセスし、使いたいモデルを選択してロードします。
 
-| モデル | パラメータ | 特徴 | 用途 |
+| モデル | パラメータ | VRAM目安 | 用途 |
 |:--|:--|:--|:--|
-| **Qwen3-0.6B** | 0.6B | 軽量・高速 | 動作確認 |
-| **Qwen3-4B** | 4B | 中規模 | 予備実験 |
-| **Qwen3-8B** | 8B (Dense) | Dense構造 | MoEとの比較基準 |
-| **Qwen3-30B-A3B** | 30B (Active 3B) | MoE, 4bit量子化 | 本番実験 |
+| **Qwen3-0.6B** | 0.6B | ~1.2GB | 動作確認・テスト |
+| **Qwen3-4B** (4bit) | 4B | ~3GB | 実験用 |
+| **Phi-3.5-mini** (4bit) | 3.8B | ~2.5GB | 実験用（別アーキテクチャとの比較） |
 
-> 大きなモデルはロードに数十秒かかります。ローディング画面が出たら待ちましょう。
+> モデルのロードに数十秒かかることがあります。ローディング画面が出たら待ちましょう。
+> サーバーのGPU（RTX 3050, 8GB VRAM）の制約により、大規模モデルは利用できません。
 
 ### Step 2 ── プロンプトとパラメータを設定する
 
@@ -222,7 +222,7 @@ client = toorPIA()
 result = client.basemap_csvform(
     "segments.csv",
     drop_columns=["trial_id", "segment_index", "segment_position"],
-    label="Qwen3-8B / laser optimization / temp=0.7 / 20 trials",
+    label="Qwen3-4B / laser optimization / temp=0.7 / 20 trials",
     tag="hidden-state-analysis"
 )
 
@@ -255,17 +255,17 @@ print(f"View: {result['shareUrl']}")  # ← ブラウザで開く
 既存の basemap に重ねてプロットすることで、差異を視覚的に比較できます。
 
 ```python
-# Step 1: Dense モデルのデータで basemap 作成
+# Step 1: Qwen3 のデータで basemap 作成
 result_base = client.basemap_csvform(
-    "segments_qwen3-8b.csv",
+    "segments_qwen3-4b.csv",
     drop_columns=["trial_id", "segment_index", "segment_position"],
-    label="Qwen3-8B (Dense) baseline",
+    label="Qwen3-4B baseline",
     tag="model-comparison"
 )
 print(f"Basemap: {result_base['shareUrl']}")
 
-# Step 2: MoE モデルのデータを addplot で重ねる
-result_add = client.addplot_csvform("segments_qwen3-30b-a3b.csv")
+# Step 2: 別アーキテクチャのデータを addplot で重ねる
+result_add = client.addplot_csvform("segments_phi-3.5-mini.csv")
 
 print(f"Status: {result_add['abnormalityStatus']}")    # normal / abnormal / unknown
 print(f"Score:  {result_add['abnormalityScore']:.3f}")
@@ -370,8 +370,8 @@ Step 6    shareUrl をブラウザで開いて Map Inspector で観察する
               │
 Step 7    条件を変えて比較する
               │
-              ├─ a) 同じプロンプトで別のモデル（Dense vs MoE）
-              │     → MoEのCSVを addplot_csvform() で重ね描き
+              ├─ a) 同じプロンプトで別のモデル（Qwen3 vs Phi-3.5）
+              │     → 別モデルのCSVを addplot_csvform() で重ね描き
               │
               ├─ b) 同じモデルで temperature を変える（0.3 vs 1.0）
               │     → 低temperatureを basemap、高temperatureを addplot
@@ -403,11 +403,11 @@ client = toorPIA()  # TOORPIA_API_KEY 環境変数を使用
 DROP_COLS = ["trial_id", "segment_index", "segment_position"]
 
 # ── Step 1: 基準データの basemap を作成 ──────────────────────
-print("=== Creating basemap (Dense model) ===")
+print("=== Creating basemap ===")
 result_base = client.basemap_csvform(
-    "segments_qwen3-8b_temp07.csv",
+    "segments_qwen3-4b_temp07.csv",
     drop_columns=DROP_COLS,
-    label="Qwen3-8B / laser optimization / temp=0.7",
+    label="Qwen3-4B / laser optimization / temp=0.7",
     tag="hidden-state",
     identna_resolution=150
 )
@@ -416,9 +416,9 @@ print(f"  Points: {result_base['xyData'].shape[0]}")
 print(f"  URL: {result_base['shareUrl']}")
 
 # ── Step 2: 比較データを addplot ─────────────────────────────
-print("\n=== Adding MoE model data ===")
+print("\n=== Adding Phi-3.5-mini data ===")
 result_add = client.addplot_csvform(
-    "segments_qwen3-30b-a3b_temp07.csv"
+    "segments_phi-3.5-mini_temp07.csv"
 )
 print(f"  Addplot #{result_add['addPlotNo']}")
 print(f"  Abnormality: {result_add['abnormalityStatus']}")
