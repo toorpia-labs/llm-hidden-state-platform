@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000";
+export const dynamic = "force-dynamic";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
@@ -8,6 +10,7 @@ export async function POST(request: NextRequest) {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    cache: 'no-store',
   });
   const data = await res.json();
   return NextResponse.json(data, { status: res.status });

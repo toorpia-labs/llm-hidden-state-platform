@@ -4,25 +4,18 @@ models:
     hf_repo: "Qwen/Qwen3-0.6B"
     quantize: false
     torch_dtype: "float16"
-    description: "軽量モデル。パイプライン検証用。"
+    description: "軽量モデル（~1.2GB VRAM）。パイプライン検証用。"
 
   - id: "qwen3-4b"
-    name: "Qwen3-4B"
+    name: "Qwen3-4B（4bit量子化）"
     hf_repo: "Qwen/Qwen3-4B"
-    quantize: false
-    torch_dtype: "float16"
-    description: "中規模モデル。"
-
-  - id: "qwen3-30b-a3b"
-    name: "Qwen3-30B-A3B（MoE, 4bit量子化）"
-    hf_repo: "Qwen/Qwen3-30B-A3B"
     quantize: true
     torch_dtype: "float16"
-    description: "本番用。Active 3Bパラメータ、MoEアーキテクチャ。"
+    description: "中規模モデル（~3GB VRAM）。"
 
-  - id: "qwen3-8b"
-    name: "Qwen3-8B"
-    hf_repo: "Qwen/Qwen3-8B"
-    quantize: false
+  - id: "phi-3.5-mini"
+    name: "Phi-3.5-mini-instruct（4bit量子化）"
+    hf_repo: "microsoft/Phi-3.5-mini-instruct"
+    quantize: true
     torch_dtype: "float16"
-    description: "Dense 8Bモデル。MoEとの比較実験用。"
+    description: "Microsoft Phi-3.5 mini 3.8B（~2.5GB VRAM）。"

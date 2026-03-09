@@ -1,13 +1,16 @@
 import { NextResponse } from "next/server";
 
-const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8000";
+export const dynamic = "force-dynamic";
+
+const BACKEND_URL = process.env.BACKEND_URL || "http://127.0.0.1:8001";
 
 export async function GET(
   _request: Request,
   { params }: { params: { id: string; filename: string } }
 ) {
   const res = await fetch(
-    `${BACKEND_URL}/results/${params.id}/download/${params.filename}`
+    `${BACKEND_URL}/results/${params.id}/download/${params.filename}`,
+    { cache: 'no-store' }
   );
 
   if (!res.ok) {

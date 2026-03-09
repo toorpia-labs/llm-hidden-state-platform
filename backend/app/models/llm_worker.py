@@ -89,7 +89,7 @@ class LLMWorker:
                 )
 
                 load_kwargs = {
-                    "torch_dtype": getattr(torch, config.get("torch_dtype", "float16")),
+                    "dtype": getattr(torch, config.get("torch_dtype", "float16")),
                     "device_map": "auto",
                     "trust_remote_code": True,
                 }
@@ -160,6 +160,7 @@ class LLMWorker:
             all_positions = []
             all_generations = []
             all_metadata = []
+            all_hidden_states = []
 
             for trial in range(n_trials):
                 outputs = await asyncio.to_thread(
@@ -187,6 +188,7 @@ class LLMWorker:
 
                 all_segments.append(segments)
                 all_positions.append(positions)
+                all_hidden_states.append(hidden_states)
 
                 # メタデータ
                 all_metadata.append({
@@ -203,5 +205,6 @@ class LLMWorker:
                 "positions": all_positions,
                 "generations": all_generations,
                 "trial_metadata": all_metadata,
+                "hidden_states": all_hidden_states,
                 "input_length": input_length,
             }

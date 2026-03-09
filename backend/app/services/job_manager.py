@@ -48,6 +48,7 @@ class JobManager:
         positions_list: list[list[float]],
         generations: list[str],
         trial_metadata: list[dict],
+        hidden_states_list: list[np.ndarray],
         params: dict,
     ):
         """ジョブを完了し、ファイルを保存"""
@@ -74,9 +75,11 @@ class JobManager:
 
         # metadata.json
         all_meta = []
-        for trial_idx, (segs, meta) in enumerate(zip(segments_list, trial_metadata)):
+        for trial_idx, (segs, meta, hs) in enumerate(
+            zip(segments_list, trial_metadata, hidden_states_list)
+        ):
             trial_meta = compute_segment_metadata(
-                hidden_states=np.zeros((meta["num_generated_tokens"], meta["hidden_dim"])),
+                hidden_states=hs,
                 segments=segs,
                 n_segments=params["n_segments"],
                 overlap=params["overlap"],

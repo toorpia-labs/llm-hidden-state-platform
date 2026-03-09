@@ -49,6 +49,7 @@ async def _run_extraction(job_id: str, request: ExtractionRequest):
             positions_list=result["positions"],
             generations=result["generations"],
             trial_metadata=result["trial_metadata"],
+            hidden_states_list=result["hidden_states"],
             params={
                 "prompt": request.prompt,
                 "n_trials": request.n_trials,
