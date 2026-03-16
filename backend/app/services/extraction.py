@@ -12,7 +12,7 @@ def extract_hidden_states_from_generation(outputs, input_length: int, layer_idx:
     for token_idx in range(len(outputs.hidden_states)):
         step_hidden = outputs.hidden_states[token_idx]
         layer_hidden = step_hidden[layer_idx]
-        token_hidden = layer_hidden[0, -1, :].cpu().numpy()
+        token_hidden = layer_hidden[0, -1, :].cpu().float().numpy()
         hidden_states_list.append(token_hidden)
     return np.stack(hidden_states_list, axis=0)
 

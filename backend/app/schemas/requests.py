@@ -10,7 +10,7 @@ class ExtractionRequest(BaseModel):
     n_trials: int = Field(default=10, ge=1, le=100)
     temperature: float = Field(default=0.7, ge=0.0, le=2.0)
     max_new_tokens: int = Field(default=100, ge=10, le=500)
-    layer: int = Field(default=-1)
+    layer: int = Field(default=-1, ge=-100, le=100)
     n_segments: int = Field(default=10, ge=5, le=50)
     overlap: float = Field(default=0.5, ge=0.0, le=0.9)
     window_func: str = Field(default="hann", pattern="^(rect|hann|hamming)$")
@@ -21,6 +21,7 @@ class ModelInfo(BaseModel):
     name: str
     description: str
     is_loaded: bool
+    note: str | None = None
 
 
 class ModelsResponse(BaseModel):
@@ -54,3 +55,4 @@ class JobStatusResponse(BaseModel):
     metadata: dict | None = None
     files: dict | None = None
     generations: list[str] | None = None
+    error: str | None = None

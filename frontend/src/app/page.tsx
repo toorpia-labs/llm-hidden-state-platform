@@ -46,10 +46,22 @@ export default function Home() {
 
   const pollJob = useCallback(
     (id: string) => {
+      const startedAt = Date.now();
+      const MAX_POLL_MS = 10 * 60 * 1000; // 10分でタイムアウト
+      let networkErrorCount = 0;
+
       pollingRef.current = setInterval(async () => {
+        if (Date.now() - startedAt > MAX_POLL_MS) {
+          stopPolling();
+          setRunning(false);
+          setError("タイムアウト: 処理が10分以上かかっています。バックエンドのログを確認してください。");
+          return;
+        }
+
         try {
           const res = await fetch(`/api/results/${id}`);
           const data = await res.json();
+          networkErrorCount = 0;
 
           setJobStatus(data.status);
           if (data.progress) {
@@ -64,10 +76,15 @@ export default function Home() {
           } else if (data.status === "failed") {
             stopPolling();
             setRunning(false);
-            setError("抽出に失敗しました");
+            setError(`抽出に失敗しました: ${data.error || "不明なエラー"}`);
           }
         } catch {
-          // ネットワークエラー時はリトライ
+          networkErrorCount++;
+          if (networkErrorCount >= 5) {
+            stopPolling();
+            setRunning(false);
+            setError("バックエンドに接続できません。サーバーの状態を確認してください。");
+          }
         }
       }, 2000);
     },

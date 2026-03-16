@@ -12,5 +12,7 @@ MODELS_CONFIG_PATH = BASE_DIR / "backend" / "models.yaml"
 # Ensure data directory exists
 DATA_DIR.mkdir(parents=True, exist_ok=True)
 
+# CUDA_VISIBLE_DEVICES is consumed by the CUDA driver before Python starts.
+# It is a no-op on macOS/MPS but harmless to read.
 CUDA_VISIBLE_DEVICES = os.getenv("CUDA_VISIBLE_DEVICES", "0")
 HF_HOME = os.getenv("HF_HOME", None)

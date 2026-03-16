@@ -38,6 +38,7 @@ async def get_results(job_id: str):
 
     if job["status"] == "failed":
         response["model_id"] = job["model_id"]
+        response["error"] = job.get("error")
 
     return JobStatusResponse(**response)
 

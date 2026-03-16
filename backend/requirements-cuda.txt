@@ -1,0 +1,4 @@
+# Linux / CUDA専用依存 — 本番サーバーのみ
+# Usage: pip install -r requirements-cuda.txt
+-r requirements.txt
+bitsandbytes>=0.41.0

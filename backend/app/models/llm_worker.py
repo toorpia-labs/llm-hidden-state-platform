@@ -7,8 +7,15 @@ from pathlib import Path
 import numpy as np
 import torch
 import yaml
-from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
+from ..utils.device import (
+    empty_cache,
+    get_device,
+    get_device_map,
+    get_dtype_for_model,
+    quantization_supported,
+)
 from ..services.extraction import (
     create_overlapping_segments,
     extract_hidden_states_from_generation,
@@ -38,15 +45,19 @@ class LLMWorker:
 
     def list_available_models(self) -> list[dict]:
         """利用可能なモデル一覧を返す（UI表示用）"""
-        return [
-            {
+        can_quantize = quantization_supported()
+        result = []
+        for m in self.registry.values():
+            entry = {
                 "id": m["id"],
                 "name": m["name"],
                 "description": m["description"],
                 "is_loaded": m["id"] == self.current_model_id,
             }
-            for m in self.registry.values()
-        ]
+            if m.get("quantize") and not can_quantize:
+                entry["note"] = "量子化はこのバックエンドでは無効（bfloat16でロード）"
+            result.append(entry)
+        return result
 
     @property
     def is_loading(self) -> bool:
@@ -75,7 +86,7 @@ class LLMWorker:
                     self.model = None
                     self.tokenizer = None
                     self.current_model_id = None
-                    torch.cuda.empty_cache()
+                    empty_cache()
                     gc.collect()
 
                 # 新モデルをロード
@@ -88,19 +99,35 @@ class LLMWorker:
                     trust_remote_code=True,
                 )
 
-                load_kwargs = {
-                    "dtype": getattr(torch, config.get("torch_dtype", "float16")),
-                    "device_map": "auto",
+                dtype = get_dtype_for_model(config.get("torch_dtype", "float16"))
+                device_map = get_device_map()
+
+                load_kwargs: dict = {
+                    "dtype": dtype,
                     "trust_remote_code": True,
                 }
+                if device_map is not None:
+                    load_kwargs["device_map"] = device_map
+
                 if config.get("quantize"):
-                    load_kwargs["quantization_config"] = BitsAndBytesConfig(load_in_4bit=True)
+                    if quantization_supported():
+                        from transformers import BitsAndBytesConfig
+                        load_kwargs["quantization_config"] = BitsAndBytesConfig(load_in_4bit=True)
+                    else:
+                        logger.warning(
+                            f"Model {model_id} has quantize=true but quantization is "
+                            "not supported on this backend. Loading in full precision."
+                        )
 
                 self.model = await asyncio.to_thread(
                     AutoModelForCausalLM.from_pretrained,
                     config["hf_repo"],
                     **load_kwargs,
                 )
+
+                # On MPS/CPU, device_map is not used; move model to device manually.
+                if device_map is None:
+                    self.model = self.model.to(get_device())
                 self.model.eval()
                 self.current_model_id = model_id
 

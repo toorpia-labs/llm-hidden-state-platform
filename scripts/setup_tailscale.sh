@@ -13,5 +13,5 @@ echo "=== Tailscale IP ==="
 tailscale ip -4
 
 echo ""
-echo "上記のIPアドレスを梅崎さんに共有してください。"
+echo "上記のIPアドレスを学生に共有してください。"
 echo "アクセスURL: http://$(tailscale ip -4):3000"
