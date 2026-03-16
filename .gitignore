@@ -4,6 +4,7 @@
 
 # Claude Code instructions (local only)
 CLAUDE.md
+.claude/
 
 # Data & results (server-local only)
 data/
