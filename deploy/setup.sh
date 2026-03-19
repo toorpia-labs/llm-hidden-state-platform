@@ -1,44 +1,61 @@
 #!/bin/bash
 set -e
 
-PROJECT_DIR="/opt/llm-hidden-state-platform"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+PROJECT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 VENV_DIR="$PROJECT_DIR/backend/.venv"
 
 echo "=== LLM Hidden State Platform Setup ==="
 
-# System dependencies
-sudo apt-get update
-sudo apt-get install -y python3.11 python3.11-venv nodejs npm
-
-# Clone repository
-sudo mkdir -p /opt
-sudo chown $USER:$USER /opt
-git clone git@github.com:toorpia-labs/llm-hidden-state-platform.git $PROJECT_DIR
-cd $PROJECT_DIR
+OS="$(uname -s)"
 
 # Backend: Python venv + dependencies
-python3.11 -m venv $VENV_DIR
-source $VENV_DIR/bin/activate
+echo "Setting up backend..."
+if [ "$OS" = "Darwin" ]; then
+    PYTHON="${PYTHON:-/opt/homebrew/bin/python3.13}"
+    REQUIREMENTS="requirements.txt"
+else
+    PYTHON="${PYTHON:-python3.11}"
+    REQUIREMENTS="requirements-cuda.txt"
+
+    # Install system dependencies (Ubuntu/Debian)
+    if command -v apt-get &>/dev/null; then
+        sudo apt-get update
+        sudo apt-get install -y python3.11 python3.11-venv nodejs npm
+    fi
+fi
+
+"$PYTHON" -m venv "$VENV_DIR"
+source "$VENV_DIR/bin/activate"
 pip install --upgrade pip
-pip install -r backend/requirements.txt
+pip install -r "$PROJECT_DIR/backend/$REQUIREMENTS"
 
 # Frontend: Node.js dependencies + build
-cd $PROJECT_DIR/frontend
+echo "Setting up frontend..."
+cd "$PROJECT_DIR/frontend"
 npm install
 npm run build
 
 # Data directory
-mkdir -p $PROJECT_DIR/data/jobs
+mkdir -p "$PROJECT_DIR/data/jobs" "$PROJECT_DIR/data/logs" "$PROJECT_DIR/data/pids"
 
 # Environment file
-cp $PROJECT_DIR/.env.example $PROJECT_DIR/.env
-echo ">>> .env を編集して必要な設定を行ってください"
+if [ ! -f "$PROJECT_DIR/.env" ] && [ -f "$PROJECT_DIR/.env.example" ]; then
+    cp "$PROJECT_DIR/.env.example" "$PROJECT_DIR/.env"
+    echo ">>> .env を編集して必要な設定を行ってください"
+fi
 
-# Install systemd services
-sudo cp $PROJECT_DIR/deploy/llm-platform-backend.service /etc/systemd/system/
-sudo cp $PROJECT_DIR/deploy/llm-platform-frontend.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable llm-platform-backend llm-platform-frontend
+# Ubuntu: install systemd services
+if [ "$OS" = "Linux" ] && command -v systemctl &>/dev/null; then
+    sudo cp "$PROJECT_DIR/deploy/llm-platform-backend.service" /etc/systemd/system/
+    sudo cp "$PROJECT_DIR/deploy/llm-platform-frontend.service" /etc/systemd/system/
+    sudo systemctl daemon-reload
+    sudo systemctl enable llm-platform-backend llm-platform-frontend
+fi
 
 echo "=== Setup complete ==="
-echo "Start services: sudo systemctl start llm-platform-backend llm-platform-frontend"
+if [ "$OS" = "Darwin" ]; then
+    echo "Start: deploy/macos/service.sh start"
+else
+    echo "Start: sudo systemctl start llm-platform-backend llm-platform-frontend"
+fi
